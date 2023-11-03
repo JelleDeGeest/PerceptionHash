@@ -1,5 +1,5 @@
 import argparse
-from clip_interrogator import clip_interrogator
+from ClipInterrogator import ClipInterrogator
 
 class PerceptionHash:
     def __init__(self, method, amount, transformation, folder):
@@ -8,11 +8,13 @@ class PerceptionHash:
         self.transformation = transformation
         self.folder = folder
 
+        self.execute()
+
     def execute(self):
         print(f"You are testings: {self.method} by generating {self.amount} images that were edited by {self.transformation}")
         
         if self.method == "clip-interrogator":
-            clip_interrogator(self.amount, self.transformation)
+            clip_interrogator = ClipInterrogator(self.amount, self.transformation, self.folder)
         # You can add more methods here in the future
         else:
             print("Method not implemented.")
@@ -28,4 +30,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     perception_hash = PerceptionHash(args.method, args.amount, args.transformation, args.folder)
-    perception_hash.execute()
