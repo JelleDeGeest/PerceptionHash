@@ -1,6 +1,7 @@
 import os
 from clip_interrogator import Config, Interrogator, LabelTable, load_list
 from PIL import Image
+from Utilities import concatenate_images
 
 class ClipInterrogator():
 
@@ -8,10 +9,12 @@ class ClipInterrogator():
         self.amount = amount
         self.transformation = transformation
         self.folder = folder
+        self.original_folder = "meta_testset"
 
         self.ci = Interrogator(Config(clip_model_name="ViT-L-14/openai"))
-        self.db = load_list("assets/db/db_clip_interrogator.txt")
+        self.db = load_list("assets/db/db_clip_interrogator_500.txt")
         self.table = LabelTable(self.db, 'terms', self.ci)
+        
 
         self.execute()
     
@@ -39,6 +42,7 @@ class ClipInterrogator():
             else:
                 wrong += 1
                 print(f"Wrong match for {file} is {str(self.db.index(best_match))}")
+                concatenate_images(image_path, os.path.join("assets", self.original_folder, f"R{str(self.db.index(best_match)).zfill(6)}.jpg"), os.path.join("assets", "wrong_matches", f"{file}_wrong_match.jpg"))
             
         print(f"Succesful matches: {right}")
         print(f"Unsuccesful matches: {wrong}")
