@@ -1,6 +1,6 @@
 from PIL import Image
 import os
-from clip_interrogator import Config, Interrogator
+from my_clip_interrogator import Config, Interrogator
 
 # Initialize the CLIP interrogator
 # ci = Interrogator(Config(clip_model_name="ViT-L-14/openai", caption_model_name="blip2-flan-t5-xl"))
@@ -10,7 +10,7 @@ folder_path = 'test/'
 
 # Loop through all files in the folder
 for filename in os.listdir(folder_path):
-    if filename.endswith('.png') or filename.endswith('.jpeg'):
+    if filename.endswith('.png') or filename.endswith('.jpg'):
         # Construct the full image path
         image_path = os.path.join(folder_path, filename)
         

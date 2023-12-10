@@ -162,3 +162,5 @@ cython_debug/
 assets/
 cache/
 test.py
+*.pt
+*.txt

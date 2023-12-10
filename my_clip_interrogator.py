@@ -194,7 +194,7 @@ class Interrogator():
         tokens = self.caption_model.generate(**inputs, max_new_tokens=self.config.caption_max_length)
         return self.caption_processor.batch_decode(tokens, skip_special_tokens=True)[0].strip()
 
-    def image_to_features(self, image: Image) -> torch.Tensor:
+    def image_to_features(self, image: Image) -> torch.Tensor:  
         self._prepare_clip()
         images = self.clip_preprocess(image).unsqueeze(0).to(self.device)
         with torch.no_grad(), torch.cuda.amp.autocast():
@@ -243,9 +243,17 @@ class Interrogator():
     def interrogate(self, image: Image, min_flavors: int=8, max_flavors: int=32, caption: Optional[str]=None) -> str:
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
+        print("--------Features----------")
+        print(image_features)
+        print("--------------------------")
 
         merged = _merge_tables([self.artists, self.flavors, self.mediums, self.movements, self.trendings], self)
         flaves = merged.rank(image_features, self.config.flavor_intermediate_count)
+
+        print("--------Flaves----------")
+        print(self.config.flavor_intermediate_count)
+        print(len(flaves))
+        print("--------------------------")
         best_prompt, best_sim = caption, self.similarity(image_features, caption)
         best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_flavors, max_count=max_flavors, desc="Flavor chain")
 
@@ -300,7 +308,7 @@ class Interrogator():
             self.clip_offloaded = False
 
 
-class LabelTable():
+class  LabelTable():
     def __init__(self, labels:List[str], desc:str, ci: Interrogator):
         clip_model, config = ci.clip_model, ci.config
         self.chunk_size = config.chunk_size
@@ -337,6 +345,7 @@ class LabelTable():
 
         if self.device == 'cpu' or self.device == torch.device('cpu'):
             self.embeds = [e.astype(np.float32) for e in self.embeds]
+        # print(self.embeds)
 
     def _load_cached(self, desc:str, hash:str, sanitized_name:str) -> bool:
         if self.config.cache_path is None or desc is None:
@@ -372,12 +381,14 @@ class LabelTable():
     
     def _rank(self, image_features: torch.Tensor, text_embeds: torch.Tensor, top_count: int=1, reverse: bool=False) -> str:
         top_count = min(top_count, len(text_embeds))
+        print("TOPC", len(text_embeds))
         text_embeds = torch.stack([torch.from_numpy(t) for t in text_embeds]).to(self.device)
         with torch.cuda.amp.autocast():
+            # print(text_embeds.shape, image_features.shape)
             similarity = image_features @ text_embeds.T
             if reverse:
                 similarity = -similarity
-            print(similarity)
+                # print(similarity)
         _, top_labels = similarity.float().cpu().topk(top_count, dim=-1)
         return [top_labels[0][i].numpy() for i in range(top_count)]
 
