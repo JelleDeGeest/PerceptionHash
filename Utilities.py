@@ -1,7 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 import math
 
-FULL_DB_PATH = "D:/thesisdata"
+FULL_DB_PATH = "D:/thesisdata/Included"
+NOT_IN_DB_PATH = "D:/thesisdata/Not-included"
 
 def concatenate_images(image_path1, image_path2, output_path):
     image1 = Image.open(image_path1)
@@ -86,9 +87,13 @@ def create_square_grid_image(image_paths, original_found=True, spacing=10, borde
 
     return grid_image
 
-def int_to_filename(number, base_name="R", extension=".jpg", total_length=6):
+def int_to_filename(number, base_name="R", extension=".jpg", total_length=6, subdir=True):
     # Convert the number to a string and pad it with zeros to the desired total length
     padded_number = str(number).zfill(total_length)
+    multiple = (number // 50000) + 1
     # Construct the filename
-    filename = f"{base_name}{padded_number}{extension}"
+    if subdir:
+        filename = f"{multiple}/{base_name}{padded_number}{extension}"
+    else:
+        filename = f"{base_name}{padded_number}{extension}"
     return filename

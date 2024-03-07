@@ -1,0 +1,108 @@
+/* Dark Mode Styles */
+body {
+    background-color: #262626; /* Dark gray background */
+    color: #ecf0f1; /* Light text color */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: block; /* Changed from flex to block */
+}
+
+h1 {
+    color: #2287e6; /* Blue color */
+    font-size: 4em;
+    padding-bottom: 10px;
+    text-align: center; /* Center the heading */
+}
+
+.form-header {
+    color: #ffffff; /* Blue color */
+    font-size: 1.3em;
+    text-align: center; /* Center the heading */
+}
+
+form {
+    background-color: #34495e; /* Slightly lighter gray for form background */
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 470px; /* Adjust as needed */
+    margin: auto; /* Center the form horizontally */
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+
+button {
+    background-color: #3498db; /* Blue background for buttons */
+    color: #ffffff; /* White text */
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%; /* Button takes full width of form */
+}
+
+
+
+.button-container {
+    display: flex;
+    justify-content: center; /* Keeps the buttons centered */
+    margin: 20px auto; /* Adds margin on top and bottom for spacing, auto for horizontal centering */
+    max-width: 500px; /* Matches the form width */
+}
+
+/* Styling for buttons to fill the container */
+.button-container button {
+    width: 100%; /* Ensures button width matches the container */
+    /* Other styling remains the same */
+}
+
+
+button:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+}
+
+div {
+    margin-bottom: 10px;
+}
+
+label.radio-inline {
+    display: inline-block; /* Or 'inline' depending on your layout needs */
+    margin-right: 20px; /* Adjust spacing between radio buttons */
+}
+
+.form-container {
+    width: 100%; /* Adjust this width as necessary */
+    max-width: 500px; /* Or your desired fixed width */
+    margin: auto; /* Center the form container */
+}
+
+/* Header within the form */
+.form-header {
+    display: block; /* Ensure it's treated as a block element */
+    width: 100%; /* Match the width of the form elements */
+    margin-bottom: 10px; /* Adjust spacing below the header */
+}
+
+/* Styling for the checkbox wrappers */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Adjust the spacing between the label and the checkbox */
+    width: 100%; /* Ensure wrappers take up the full width */
+    margin-bottom: 5px; /* Adjust the bottom margin to control spacing between checkboxes */
+}
+
+/* Ensure labels and checkboxes align nicely */
+.checkbox-wrapper label{
+    white-space: nowrap; /* Keep text on a single line */
+    margin-right: auto;
+}
+

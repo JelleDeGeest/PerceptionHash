@@ -197,6 +197,10 @@ class Interrogator():
     def image_to_features(self, image: Image) -> torch.Tensor:  
         self._prepare_clip()
         images = self.clip_preprocess(image).unsqueeze(0).to(self.device)
+        print("--------preprocessed----------")
+        print(images.shape)
+        print(images)
+        print("--------------------------")
         with torch.no_grad(), torch.cuda.amp.autocast():
             image_features = self.clip_model.encode_image(images)
             image_features /= image_features.norm(dim=-1, keepdim=True)
@@ -244,16 +248,13 @@ class Interrogator():
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
         print("--------Features----------")
+        print(image_features.shape)
         print(image_features)
         print("--------------------------")
 
         merged = _merge_tables([self.artists, self.flavors, self.mediums, self.movements, self.trendings], self)
         flaves = merged.rank(image_features, self.config.flavor_intermediate_count)
 
-        print("--------Flaves----------")
-        print(self.config.flavor_intermediate_count)
-        print(len(flaves))
-        print("--------------------------")
         best_prompt, best_sim = caption, self.similarity(image_features, caption)
         best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_flavors, max_count=max_flavors, desc="Flavor chain")
 
