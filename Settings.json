@@ -1,0 +1,19 @@
+{
+    "working_directory": "D:\\Coding\\PerceptionHash\\assets",
+    "distorted_directory": "D:\\thesisdata\\distorted",
+    "input_directories": {
+      "MetaTestset_1": "D:\\thesisdata\\Included\\1",
+      "MetaTestset_2": "D:\\thesisdata\\Included\\2",
+      "MetaTestset_3": "D:\\thesisdata\\Not-included"
+    },
+    "distortion_settings": {
+      "rotate": [90, 180, 270],
+      "scale": [0.25, 0.5, 1.5],
+      "blur": [2, 5],
+      "color_distortion": [0.3, 0.5, 0.7],
+      "compression": [30, 50, 70],
+      "crop_rotation": [10, 15]
+    }
+    
+}
+  

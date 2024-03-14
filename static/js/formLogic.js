@@ -3,17 +3,21 @@ document.addEventListener("DOMContentLoaded", function() {
         distortionContainer: {
             conditions: [
                 () => document.querySelector('input[name="imageSource"]:checked')?.value === 'distorted',
+                () => document.querySelector('#imageSourceContainer input[type="checkbox"]:checked') !== null,
+                
             ],
         },
         hashingContainer: {
             conditions: [
                 () => document.querySelector('#distortionContainer input[type="checkbox"]:checked') !== null,
+                () => document.querySelector('#imageSourceContainer input[type="checkbox"]:checked') !== null,
             ],
         },
         graphContainer: {
             conditions: [
                 () => document.querySelector('#hashingContainer input[type="checkbox"]:checked') !== null,
                 () => document.querySelector('#distortionContainer input[type="checkbox"]:checked') !== null,
+                () => document.querySelector('#imageSourceContainer input[type="checkbox"]:checked') !== null,
             ],
         },
         submitButtonContainer: {
@@ -21,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 () => document.querySelector('#graphContainer input[type="checkbox"]:checked') !== null,
                 () => document.querySelector('#hashingContainer input[type="checkbox"]:checked') !== null,
                 () => document.querySelector('#distortionContainer input[type="checkbox"]:checked') !== null,
+                () => document.querySelector('#imageSourceContainer input[type="checkbox"]:checked') !== null,
             ],
         },
     };

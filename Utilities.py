@@ -1,5 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import math
+import os
+from tqdm import tqdm
 
 FULL_DB_PATH = "D:/thesisdata/Included"
 NOT_IN_DB_PATH = "D:/thesisdata/Not-included"
@@ -97,3 +99,42 @@ def int_to_filename(number, base_name="R", extension=".jpg", total_length=6, sub
     else:
         filename = f"{base_name}{padded_number}{extension}"
     return filename
+
+def is_sequential_naming(folder_path):
+    with os.scandir(folder_path) as entries:
+        # Creating a generator expression to count files without loading all names into memory
+        num_files = sum(1 for _ in entries)
+
+    # Resetting entries iterator by reopening scandir
+    with os.scandir(folder_path) as entries:
+        # Check for the existence of each expected filename
+        expected_files_found = 0
+        for entry in entries:
+            if entry.is_file():
+                name, ext = os.path.splitext(entry.name)
+                if name.isdigit() and 0 <= int(name) < num_files:
+                    expected_files_found += 1
+                else:
+                    # Found a file not matching the naming convention
+                    return False
+
+    # If the count of sequentially named files matches the total number, the structure is correct
+    return expected_files_found == num_files
+
+def rename_images_in_input_folder(folder_path):
+    print("Checking if the input folder follows the desired naming structure...")
+    if is_sequential_naming(folder_path):
+        print("Folder follows the desired naming structure. No changes made.")
+        return
+    print("Folder does not follow the desired naming structure. Renaming files...")
+    
+    with os.scandir(folder_path) as entries:
+        files = [(entry.name, entry.path) for entry in entries if entry.is_file()]
+
+    for i, (_, path) in enumerate(tqdm(files, desc="Renaming images")):
+        extension = os.path.splitext(path)[1]
+        new_file_name = f"{i}{extension}"
+        new_file_path = os.path.join(folder_path, new_file_name)
+        os.rename(path, new_file_path)
+
+    print(f"Renamed {len(files)} files.")

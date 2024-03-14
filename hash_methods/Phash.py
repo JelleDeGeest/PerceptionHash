@@ -1,13 +1,12 @@
 from perception.hashers import PHash
 import json
 import numpy as np
+from hash_method import HashMethod
 
 
-class Phash():
-    def __init__(self, folders_to_test, databases, ):
-        self.folders_to_test = folders_to_test
-        print(self.folders_to_test)
-        # assume databases are pregenerated
+class Phash(HashMethod):
+    def __init__(self, databases):
+        # assume databases are pregenerated and stored in a local file
         self.databases = databases
 
         thresholds = []
@@ -44,6 +43,3 @@ class Phash():
     
     def get_general_accuracy_thresholds(self):
         return self.general_accuracy_thresholds
-
-    def get_folders_to_test(self):
-        return self.folders_to_test
