@@ -1,21 +1,26 @@
 from perception.hashers import PHash
 import json
 import numpy as np
-from hash_method import HashMethod
+from .HashMethod import HashMethod
+import os
+from tqdm import tqdm
+from PIL import Image
 
 
 class Phash(HashMethod):
-    def __init__(self, databases):
+    def __init__(self):
         # assume databases are pregenerated and stored in a local file
-        self.databases = databases
-
+        self.databases = None
         thresholds = []
         for i in range(64,0,-1):
             thresholds.append(i/64)
         self.roc_thresholds = thresholds
         self.general_accuracy_thresholds = np.arange(0.5, 1, 0.05)
+        self.name = "Phash"
     
     def get_similar_images(self, images, similarity_threshold):
+        if self.databases is None:
+            raise Exception("No database set for Phash. Use set_database() to set a database.")
         with open(self.databases, 'r') as file:
             db = json.load(file)
         hasher = PHash()
@@ -43,3 +48,35 @@ class Phash(HashMethod):
     
     def get_general_accuracy_thresholds(self):
         return self.general_accuracy_thresholds
+
+    def set_database(self, database):
+        self.databases = database
+
+    def database_generation(self, images_path, database_path):
+        hasher = PHash()
+        hashes = []
+
+        # Check if all files have same file extension
+        file_extensions = set()
+        for file in os.listdir(images_path):
+            file_extensions.add(os.path.splitext(file)[1])
+        if len(file_extensions) > 1:
+            raise Exception("All files must have the same file extension")
+        extension = file_extensions.pop()
+
+        # Loop through all files in the folder and display progress bar
+        for index in tqdm(range(len(os.listdir(images_path)))):
+            file_path = os.path.join(images_path, str(index)+extension)
+            # Open the image using PIL and calculate its pHash
+            with Image.open(file_path) as img:
+                img_hash = hasher.compute(img)
+                hashes.append(str(img_hash))
+
+        # Write the hashes to the output file in JSON format
+        database_partition = 0  # Ensure you provide a filename here, e.g., "output.json"
+        with open(os.path.join(database_path, str(database_partition)+".json"), 'w') as f:
+            json.dump(hashes, f)
+
+        print(f"Hashes written to {os.path.join(database_path, str(database_partition)+'.json')}")
+
+        

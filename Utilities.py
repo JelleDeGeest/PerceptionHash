@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 import os
 from tqdm import tqdm
+import json
 
 FULL_DB_PATH = "D:/thesisdata/Included"
 NOT_IN_DB_PATH = "D:/thesisdata/Not-included"
@@ -127,6 +128,15 @@ def rename_images_in_input_folder(folder_path):
         print("Folder follows the desired naming structure. No changes made.")
         return
     print("Folder does not follow the desired naming structure. Renaming files...")
+
+    # because the indexes are changing we need to delete existing databases
+    input_folder_name = folder_path.splitext(folder_path)[0].split("/")[-1]
+    with open("Settings.json") as file:
+        settings = json.load(file)
+    database_path = os.path.join(settings["working_directory"], "databases" ,input_folder_name)
+    if os.path.exists(database_path):
+        print(f"Database folder for {input_folder_name} already exists, deleting it.")
+        os.rmdir(database_path)
     
     with os.scandir(folder_path) as entries:
         files = [(entry.name, entry.path) for entry in entries if entry.is_file()]

@@ -1,16 +1,17 @@
 import argparse
-from hash_methods import Phash, Vit
+from hash_methods import HASH_METHODS
 from result_methods import Roc, General_accuracy
 import os
 
 
 class PerceptionHash:
-    def __init__(self, source, distorted_folders, distortion_techniques, hashing_techniques, graphs):
+    def __init__(self, source, distorted_folders, distortion_techniques, hashing_techniques, graphs, databases):
         self.source = source
         self.distorted_folders = distorted_folders
         self.distortion_techniques = distortion_techniques
         self.hashing_techniques = hashing_techniques
         self.graphs = graphs
+        self.databases = databases
 
         self.execute()
 
@@ -45,10 +46,7 @@ class PerceptionHash:
     def get_hash_objects(self):
         hash_objects = []
         for technique in self.hashing_techniques:
-            if technique ==  "vit":
-                hash_objects.append(Vit())
-            elif technique == "phash":
-                hash_objects.append(Phash(self.distorted_images_folders, "assets/db/image_hashes.json"))
+            hash_objects.append(HASH_METHODS[technique]())
         return hash_objects
 
     def generate_graphs(self):

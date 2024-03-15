@@ -13,9 +13,4 @@ def long_running_task(data):
     print(data)
     PerceptionHash(source, distorted_folders, distortion_techniques, hashing_techniques, graphs)
 
-    # total = 20
-    # for i in range(total):
-    #     time.sleep(1)  # Simulate work by sleeping
-    #     print(i)
-
     return 
