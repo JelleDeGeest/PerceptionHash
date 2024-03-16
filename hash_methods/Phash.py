@@ -11,25 +11,32 @@ class Phash(HashMethod):
     def __init__(self):
         # assume databases are pregenerated and stored in a local file
         self.databases = None
-        thresholds = []
-        for i in range(64,0,-1):
-            thresholds.append(i/64)
-        self.roc_thresholds = thresholds
-        self.general_accuracy_thresholds = np.arange(0.5, 1, 0.05)
-        self.name = "Phash"
+        with open("Settings.json") as file:
+            settings = json.load(file)
+        self.database_path = os.path.join(settings["working_directory"], "databases")
+        self.databases_loaded = None
     
-    def get_similar_images(self, images, similarity_threshold):
+    def get_similar_images(self, images: dict, similarity_threshold):
         if self.databases is None:
             raise Exception("No database set for Phash. Use set_database() to set a database.")
-        with open(self.databases, 'r') as file:
-            db = json.load(file)
         hasher = PHash()
-        db_matrix = self.hashes_to_matrix(db, hasher)
-        similarities = []
-        for image in images:
-            image_hash = hasher.compute(image)
-            similarities.append(self.find_similar_images(image_hash, db_matrix, similarity_threshold, hasher))
-        return similarities
+        if self.databases_loaded is None:
+            self.databases_loaded = {}
+            for database in self.databases:
+                with open(os.path.join(self.database_path, database, "Phash", "0.json"), 'r') as file:
+                    db = json.load(file)
+                self.databases_loaded[database] = self.hashes_to_matrix(db, hasher)
+        
+        for key in images.keys():
+            image_hash = hasher.compute(images[key])
+            similarities = {}
+            for db_name, db_matrix in self.databases_loaded.items():
+                temp = self.find_similar_images(image_hash, db_matrix, similarity_threshold, hasher)
+                if len(temp) > 0:
+                    similarities[db_name] = temp
+            images[key] = similarities
+
+        return images
     
     def hashes_to_matrix(self, hashes, hasher):
         # Convert hash strings to binary matrix
@@ -40,14 +47,8 @@ class Phash(HashMethod):
     def find_similar_images(self,new_image_hash, db_matrix, threshold, hasher):
         new_image_vector = hasher.string_to_vector(new_image_hash, hash_format="base64")
         distances = np.sum(np.abs(db_matrix - new_image_vector), axis=1) / 64
-        similar_indices = np.where(distances <= threshold)[0]
+        similar_indices = np.where(distances <= (1-threshold))[0]
         return similar_indices
-    
-    def get_roc_thresholds(self):
-        return self.get_roc_thresholds
-    
-    def get_general_accuracy_thresholds(self):
-        return self.general_accuracy_thresholds
 
     def set_database(self, database):
         self.databases = database
