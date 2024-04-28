@@ -22,9 +22,7 @@ class DatabaseGenerator():
 
     def generate_hash_objects(self):
         for value in HASH_METHODS.values():
-            # TODO this is just temporary because others are not implemented yet
-            if value.__name__ == "Phash":
-                self.hash_objects.append(value())
+            self.hash_objects.append(value())
     
     def check_required_variables(self):
         # check that input dir exists and is contains images
@@ -34,7 +32,7 @@ class DatabaseGenerator():
             raise Exception("Input directory is empty")
         
         # check that the input folder has the correct naming structure
-        rename_images_in_input_folder(self.input_dir)
+        rename_images_in_input_folder(self.input_dir, self.input_dirname)
 
         # check if the databases folder exists, if not create it
         self.database_path = os.path.join(self.workdir, "databases", self.input_dirname)

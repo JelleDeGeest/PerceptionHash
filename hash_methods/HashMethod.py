@@ -6,7 +6,7 @@ class HashMethod(ABC):
         pass
     
     @abstractmethod
-    def database_generation(self, images_path: str) -> bool:
+    def database_generation(self, images_path: str):
         pass
 
     

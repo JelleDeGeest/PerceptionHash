@@ -7,7 +7,7 @@ from datetime import datetime
 from tqdm import tqdm
 
 class PerceptionHash:
-    def __init__(self, source, input_folders, distortion_techniques, hashing_techniques, graphs, databases):
+    def __init__(self, source, input_folders, distortion_techniques, hashing_techniques, graphs, databases, cache=False):
         # choose wether to load distorted images or create them
         self.source = source
         # input folder to load images
@@ -20,6 +20,8 @@ class PerceptionHash:
         self.graphs = graphs
         # databases to use
         self.databases = databases
+        # cache usage
+        self.cache = cache
         # get date and time
         self.timestamp = datetime.now().strftime("%d_%m_%Y - %H_%M_%S")
 
@@ -113,7 +115,7 @@ class PerceptionHash:
         graph_objects = []
         print(self.folders_to_hash)
         for graph in self.graphs:
-            graph_objects.append(RESULT_METHODS[graph](self.hash_objects, self.folders_to_hash))
+            graph_objects.append(RESULT_METHODS[graph](self.hash_objects, self.folders_to_hash, self.cache, self.distortion_techniques))
 
         # create result folder with curren timestamp
         result_folder = os.path.join(self.settings["working_directory"], "results", self.timestamp)

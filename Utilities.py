@@ -3,6 +3,7 @@ import math
 import os
 from tqdm import tqdm
 import json
+import re
 
 FULL_DB_PATH = "D:/thesisdata/Included"
 NOT_IN_DB_PATH = "D:/thesisdata/Not-included"
@@ -122,7 +123,7 @@ def is_sequential_naming(folder_path):
     # If the count of sequentially named files matches the total number, the structure is correct
     return expected_files_found == num_files
 
-def rename_images_in_input_folder(folder_path):
+def rename_images_in_input_folder(folder_path, input_folder_name):
     print("Checking if the input folder follows the desired naming structure...")
     if is_sequential_naming(folder_path):
         print("Folder follows the desired naming structure. No changes made.")
@@ -130,10 +131,11 @@ def rename_images_in_input_folder(folder_path):
     print("Folder does not follow the desired naming structure. Renaming files...")
 
     # because the indexes are changing we need to delete existing databases
-    input_folder_name = folder_path.splitext(folder_path)[0].split("/")[-1]
     with open("Settings.json") as file:
         settings = json.load(file)
+
     database_path = os.path.join(settings["working_directory"], "databases" ,input_folder_name)
+
     if os.path.exists(database_path):
         print(f"Database folder for {input_folder_name} already exists, deleting it.")
         os.rmdir(database_path)
@@ -148,3 +150,9 @@ def rename_images_in_input_folder(folder_path):
         os.rename(path, new_file_path)
 
     print(f"Renamed {len(files)} files.")
+
+def extract_number(filename, prefix="", sufix="", extension=".jpg" ):
+    match = re.search(rf"{prefix}(\d+){sufix}{extension}", filename)
+    if match:
+        return int(match.group(1))
+    return 0

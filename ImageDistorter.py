@@ -4,7 +4,7 @@ from PIL import Image, ImageFilter, ImageEnhance
 import math
 import json
 from tqdm import tqdm
-from Utilities import rename_images_in_input_folder
+from Utilities import rename_images_in_input_folder, extract_number
 
 
 class ImageDistorter():
@@ -25,7 +25,7 @@ class ImageDistorter():
             "crop_rotation": self.crop_rotation,
         }
 
-        rename_images_in_input_folder(self.input_path)
+        rename_images_in_input_folder(self.input_path, input_dirname)
         self.distort()
 
 
@@ -76,7 +76,7 @@ class ImageDistorter():
             amount = self.amount
 
             # loop through the images and rotate them
-            for file in tqdm(os.listdir(self.input_path),desc=f"Rotating images by {degree} degrees"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number),desc=f"Rotating images by {degree} degrees"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
@@ -100,7 +100,7 @@ class ImageDistorter():
                 continue
             amount = self.amount
 
-            for file in tqdm(os.listdir(self.input_path), desc=f"Scaling images by factor {factor}"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc=f"Scaling images by factor {factor}"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
@@ -126,7 +126,7 @@ class ImageDistorter():
                 continue
             amount = self.amount
 
-            for file in tqdm(os.listdir(self.input_path), desc=f"Blurring images with radius {radius}"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc=f"Blurring images with radius {radius}"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
@@ -143,7 +143,7 @@ class ImageDistorter():
             return
         amount = self.amount
         
-        for file in tqdm(os.listdir(self.input_path), desc="Mirroring images"):
+        for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc="Mirroring images"):
             if amount == 0:
                 break
             file_name, file_extension = os.path.splitext(file)
@@ -165,7 +165,7 @@ class ImageDistorter():
                 continue
             amount = self.amount
 
-            for file in tqdm(os.listdir(self.input_path),desc=f"Distorting colors with factor {factor}"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number),desc=f"Distorting colors with factor {factor}"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
@@ -186,7 +186,7 @@ class ImageDistorter():
                 continue
             amount = self.amount
 
-            for file in tqdm(os.listdir(self.input_path), desc=f"Compressing images with quality {quality}"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc=f"Compressing images with quality {quality}"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
@@ -233,7 +233,7 @@ class ImageDistorter():
                 continue
             amount = self.amount
 
-            for file in tqdm(os.listdir(self.input_path), desc=f"Cropping and rotating images by {degree} degrees"):
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc=f"Cropping and rotating images by {degree} degrees"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
