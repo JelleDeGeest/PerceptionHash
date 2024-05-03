@@ -54,11 +54,11 @@ def compare_values(files_keys, target_key):
 
 # Example usage
 files_keys = [
-    {'file': 'assets/results/24_04_2024 - 03_59_44/roc_curve.json', 'key': 'Phash', 'display': 'Phash'},
-    {'file': 'assets/results/24_04_2024 - 03_59_44/roc_curve.json', 'key': 'Phash_Vit', 'display': 'Phash_Vit'},
-    {'file': 'assets/results/24_04_2024 - 03_59_44/roc_curve.json', 'key': 'Phash_Dhash', 'display': 'Phash_Dhash'}
+    {'file': 'assets/results/Phash-Dhash-Vit 50K/roc_curve.json', 'key': 'Phash', 'display': 'Phash'},
+    {'file': 'assets/results/Phash-Dhash-Vit 50K/roc_curve.json', 'key': 'Phash_Vit', 'display': 'Phash_Vit'},
+    {'file': 'assets/results/Phash-Dhash-Vit 50K/roc_curve.json', 'key': 'Phash_Dhash', 'display': 'Phash_Dhash'}
     # Add more files, keys, and display names as needed
 ]
 
-target_key = '0.84375'
+target_key = '0.96875'
 compare_values(files_keys, target_key)

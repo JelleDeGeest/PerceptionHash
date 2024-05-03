@@ -155,4 +155,4 @@ def extract_number(filename, prefix="", sufix="", extension=".jpg" ):
     match = re.search(rf"{prefix}(\d+){sufix}{extension}", filename)
     if match:
         return int(match.group(1))
-    return 0
+    raise ValueError(f"Filename {filename} does not match the expected pattern: {prefix}<number>{sufix}{extension}")

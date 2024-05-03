@@ -13,16 +13,12 @@ class Phash_Vit(HashMethod):
         self.new_fp = {}
 
 
-    def get_similar_images(self, images: dict, similarity_thresholds, cache_path=None):
-        image_copy = copy.deepcopy(images)
-        phash_images = self.phash.get_similar_images(images, similarity_thresholds, cache_path)
-        vit_images = self.vit.get_similar_images(image_copy,[self.threshold], cache_path)
-        # print(vit_images["MetaTestset_1:0"])
-        # print(phash_images["MetaTestset_1:0"])
-        images = self.combine_dictionaries(phash_images, vit_images)
-        self.find_new_FP(phash_images, vit_images)
-
-        return images
+    def get_similar_images(self, images: dict, cache_path=None):
+        phash_similarities = self.phash.get_similar_images(images, cache_path)
+        vit_similarities = self.vit.get_similar_images(images, cache_path)
+        mask = vit_similarities < self.threshold
+        phash_similarities[mask] = 0
+        return phash_similarities
 
     def set_database(self, database):
         self.vit.set_database(database)

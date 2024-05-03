@@ -28,6 +28,7 @@ class Perception_Hasher(HashMethod):
         # Check if a database has been set
         if self.databases is None:
             raise Exception(f"No database set for {self.name}. Use set_database() to set a database.")
+        
         hasher = self.hasher
         if cache_path is not None and cache_path != self.cache_path:
             with open(os.path.join(cache_path, f"{self.name}.json")) as f:
@@ -66,7 +67,7 @@ class Perception_Hasher(HashMethod):
         time2 = time.time()
         # print(f"Time taken for Similarity: {time2-time1} seconds")
 
-        return similarities
+        return similarities.astype(np.float64)
 
     def hashes_to_matrix(self, hashes, hasher):
         # Convert hash strings to binary matrix
@@ -121,7 +122,8 @@ class Perception_Hasher(HashMethod):
             raise Exception("All files must have the same file extension")
         extension = file_extensions.pop()
 
-        files = sorted(os.listdir(images_path), key=extract_number)
+        files = sorted(os.listdir(images_path), key=lambda file: extract_number(file, ".*" + "-", "-" + ".*", ""))
+        
 
         # Loop through each file in alphabetical order
         for filename in tqdm(files):

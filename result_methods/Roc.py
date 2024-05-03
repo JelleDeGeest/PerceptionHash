@@ -4,9 +4,12 @@ import os
 from PIL import Image
 import json
 from tqdm import tqdm
-from hash_methods import RESULT_THRESHOLDS, AMOUNT_OF_IMAGES
+from hash_methods import RESULT_THRESHOLDS, AMOUNT_OF_IMAGES, AMOUNT_OF_THREADS
 import time
 from Utilities import extract_number
+import concurrent.futures
+import copy
+
 
 
 class Roc():
@@ -28,25 +31,30 @@ class Roc():
         total = sum(len(os.listdir(folder_path)) for folder_path in self.folders_to_hash.values())
         results = {}
         for folder, folder_path in self.folders_to_hash.items():
-            for distortion_folder in os.listdir(folder_path):
-
-                # check if the distortion folder is in the list of distortion techniques
-                if distortion_folder is not None and distortion_folder not in self.distortion_techniques:
-                    continue
-                
-                # check if the distortion folder is in the list of distortion techniques
-                if distortion_folder not in results:
-                    results[distortion_folder] = {}
-
-                # create a task for each hash object
-                for hash_object in self.hash_objects:
-                    self.current_hash_object = hash_object
-                    thresholds = RESULT_THRESHOLDS["roc_curve"][hash_object.__class__.__name__]
-                    if hash_object.__class__.__name__ not in results[distortion_folder]:
-                        results[distortion_folder][hash_object.__class__.__name__] = self.get_rates(thresholds, folder, os.path.join(folder_path, distortion_folder), distortion_folder)
-                    else:  
-                        results[distortion_folder][hash_object.__class__.__name__] = self.combine_results(results[distortion_folder][hash_object.__class__.__name__], self.get_rates(thresholds, folder, os.path.join(folder_path, distortion_folder), distortion_folder))
-            
+            for hash_object in self.hash_objects:
+                threads = []
+                with concurrent.futures.ThreadPoolExecutor(max_workers=AMOUNT_OF_THREADS[hash_object.__class__.__name__]) as executor:
+                    for distortion_folder in os.listdir(folder_path):
+                        # check if the distortion folder is in the list of distortion techniques
+                        if len(self.distortion_techniques) != 0 and distortion_folder not in self.distortion_techniques:
+                            continue
+                        
+                        # check if the distortion folder is in the list of distortion techniques
+                        if distortion_folder not in results:
+                            results[distortion_folder] = {}
+                    
+                        # self.current_hash_object = hash_object
+                        thresholds = RESULT_THRESHOLDS["roc_curve"][hash_object.__class__.__name__]
+                        threads.append([distortion_folder,hash_object.__class__.__name__, executor.submit(self.get_rates, thresholds, folder, os.path.join(folder_path, distortion_folder), distortion_folder, copy.deepcopy(hash_object))])
+                        print(f"Thread created for {folder} with {distortion_folder} with {hash_object.__class__.__name__}")
+                 
+                    for thread in threads:
+                        rates = thread[2].result()
+                        if thread[1] not in results[thread[0]]:
+                            results[thread[0]][thread[1]] = rates
+                        else:  
+                            results[thread[0]][thread[1]] = self.combine_results(results[thread[0]][thread[1]], rates)
+                    
 
 
 
@@ -61,7 +69,7 @@ class Roc():
         self.generate_auc(results, result_folder)
             
 
-    def get_rates(self, thresholds, folder, folder_path, distortion):
+    def get_rates(self, thresholds, folder, folder_path, distortion, current_hash_object):
         # This method should return true positives, false positives, true negatives, and false negatives
         # based on the threshold. You'll need to modify this method to fit your hashing method and data structure.
         # This is a placeholder example.
@@ -70,21 +78,21 @@ class Roc():
         current_score = {}
         for threshold in thresholds:
             current_score[threshold] = [0, 0, 0, 0]
-        if AMOUNT_OF_IMAGES[self.current_hash_object.__class__.__name__] == -1:
+        if AMOUNT_OF_IMAGES[current_hash_object.__class__.__name__] == -1:
             total = len(os.listdir(folder_path))
         else:
-            total = AMOUNT_OF_IMAGES[self.current_hash_object.__class__.__name__]
-        progress_bar = tqdm(total=total, leave=False)
-        progress_bar.set_description(f"ROC Curve: {folder} with {distortion} with {self.current_hash_object.__class__.__name__}")
+            total = AMOUNT_OF_IMAGES[current_hash_object.__class__.__name__]
+        # progress_bar = tqdm(total=total, leave=False)
+        # progress_bar.set_description(f"ROC Curve: {folder} with {distortion} with {current_hash_object.__class__.__name__}")
         imgs = {}
         should_be_found = folder in os.listdir(self.databases_path)
         file_list = sorted(os.listdir(folder_path), key=lambda file: extract_number(file, ".*" + "-", "-" + self.distortion_name_dict[distortion.split('-')[0]], ".*"))
 
-        counter = AMOUNT_OF_IMAGES[self.current_hash_object.__class__.__name__]
+        counter = AMOUNT_OF_IMAGES[current_hash_object.__class__.__name__]
         if not self.cache:
             
             for file in file_list:
-                progress_bar.update(1)
+                # progress_bar.update(1)
                 key = file.split("-")[0]
                 if key not in imgs.keys():
                     imgs[key] = []
@@ -92,20 +100,22 @@ class Roc():
                 if len(imgs.keys()) == 100:
                     for key, value in imgs.items():
                         imgs[key] = np.array(value)
-                    similarities = self.current_hash_object.get_similar_images(imgs, thresholds, output_folder=self.result_folder )
+                    similarities = current_hash_object.get_similar_images(imgs, thresholds, output_folder=self.result_folder )
                     current_score = self.get_accuracies(similarities, should_be_found, current_score)
                     imgs = {}
                 if counter == 1:
                     break
                 counter -= 1
             if(len(imgs.keys()) > 0):
-                similarities = self.current_hash_object.get_similar_images(imgs, thresholds)
+                similarities = current_hash_object.get_similar_images(imgs, thresholds)
                 current_score = self.get_accuracies(similarities, should_be_found, current_score)
 
         if self.cache:
             cache_path = self.cache_dict[folder][distortion]
             for file in file_list:
-                progress_bar.update(1)
+                # print(file_list)
+                # print(distortion)
+                # progress_bar.update(1)
                 key = file.split("-")[0]
                 if key not in imgs.keys():
                     imgs[key] = []
@@ -114,7 +124,7 @@ class Roc():
                 if len(imgs[key]) == 100:
                     for key, value in imgs.items():
                         imgs[key] = np.array(value)
-                    similarities = self.current_hash_object.get_similar_images(imgs, cache_path)
+                    similarities = current_hash_object.get_similar_images(imgs, cache_path)
                     current_score = self.get_accuracies(imgs, similarities, thresholds, should_be_found, current_score)
                     imgs = {}
                 if counter == 1:
@@ -123,79 +133,58 @@ class Roc():
             if len(imgs.keys()) > 0:
                 for key, value in imgs.items():
                     imgs[key] = np.array(value)
-                similarities = self.current_hash_object.get_similar_images(imgs, cache_path)
+                similarities = current_hash_object.get_similar_images(imgs, cache_path)
                 current_score = self.get_accuracies(imgs, similarities, thresholds, should_be_found, current_score)
 
 
         with open(os.path.join(self.result_folder, "new_false_negatives.txt"), "a") as file:
-            file.write(f"New false negatives found for {folder} with {distortion} with {self.current_hash_object.__class__.__name__} \n")
-            file.write(json.dumps(self.current_hash_object.new_fp))
+            file.write(f"New false negatives found for {folder} with {distortion} with {current_hash_object.__class__.__name__} \n")
+            file.write(json.dumps(current_hash_object.new_fp))
             file.write("\n")
         
         with open(os.path.join(self.result_folder, "false_postives.txt"), "a") as file:
-            file.write(f"False positives found for {folder} with {distortion} with {self.current_hash_object.__class__.__name__} \n")
+            file.write(f"False positives found for {folder} with {distortion} with {current_hash_object.__class__.__name__} \n")
             file.write(json.dumps(self.false_positives))
             file.write("\n") 
         
-        self.current_hash_object.new_fp = {}
+        current_hash_object.new_fp = {}
 
 
-        progress_bar.close()
+        # progress_bar.close()
         # Logic to calculate tp, fp, tn, fn goes here
         return current_score
     
     def get_accuracies(self, imgs, similarities, thresholds,  should_be_found, current_score):
+        # print(imgs)
         time1 = time.time()
+        print(similarities)
         for db, nrs in imgs.items():
             for threshold in thresholds:
                 # check if the originals are found
+                current_mask = similarities >= threshold
                 for i, nr in enumerate(nrs):
                     # print( similarities[i, nr])
                     # print( threshold)
-                    if similarities[i, nr] >= threshold:
-                        current_score[threshold][1] -= 1
-                        if should_be_found:
+                    if should_be_found:
+                        # check if the original is found
+                        if current_mask[i, nr]:
+                            current_score[threshold][1] -= 1 
                             current_score[threshold][0] += 1
                         else:
-                            current_score[threshold][1] += 1
-                    else:
-                        if should_be_found:
                             current_score[threshold][3] += 1
-                        else:
+                    else:
+                        # check if no match is found in the entire row
+                        if not np.any(current_mask[i]):
                             current_score[threshold][2] += 1
-                    # similarities[i, nr] = 0
+
                 # check if the false positives are found
-                current_score[threshold][1] += np.sum(similarities >= threshold)
+                current_score[threshold][1] += int(np.sum(current_mask))
 
         time2 = time.time()
         # print(f"Time taken for False Positives: {time2-time1} seconds")
+        print(current_score)
         return current_score
 
-        # for db_and_nr, similarity in similarities.items():
-        #     for threshold, db_dict in similarity.items():
-        #         if threshold not in self.false_positives.keys():
-        #             self.false_positives[threshold] = {}
-        #         if should_be_found:
-        #             if len(db_dict.keys()) == 0:
-        #                 current_score[threshold][3] += 1
-        #             else:
-        #                 if db_and_nr.split(":")[0] in db_dict.keys() and int(db_and_nr.split(":")[1]) in db_dict[db_and_nr.split(":")[0]]:
-        #                     current_score[threshold][0] += 1
-        #                     current_score[threshold][1] -= 1
-        #                     og_found = True
-        #                 current_score[threshold][1] += sum(len(value) for value in db_dict.values())
-        #                 if (len(self.false_positives[threshold].keys())<11) and ((og_found and len(db_dict[db_and_nr.split(":")[0]]) > 1) or (not og_found and len(db_dict[db_and_nr.split(":")[0]]) > 0)):
-        #                     self.false_positives[threshold][db_and_nr.split(":")[1]] = str(db_dict[db_and_nr.split(":")[0]])
-        #         else:
-        #             if len(db_dict.keys()) == 0:
-        #                 current_score[threshold][2] += 1
-        #             else:
-        #                 current_score[threshold][1] += sum(len(value) for value in db_dict.values())
-        #                 if (len(self.false_positives[threshold].keys()) < 11):
-        #                     self.false_positives[threshold][db_and_nr.split(":")[1]] = str(db_dict)
-
-        
-        return current_score
     def generate_auc(self, results, result_folder):
         auc_results = {}
         for distortion, value1 in results.items():

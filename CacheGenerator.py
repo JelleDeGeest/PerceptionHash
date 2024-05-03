@@ -15,8 +15,8 @@ for key, value in HASH_METHODS.items():
 
 for directory in tqdm(os.listdir(distorted_folder)):
     for distortion in os.listdir(os.path.join(distorted_folder, directory)):
-        if distortion != "blur-2":
-            continue
+        # if distortion != "blur-2":
+        #     continue
         for hash_object in hash_objects:
             # check if caceh folder exists, if not create it
             if not os.path.exists(chache_folder + directory + "/" + distortion):

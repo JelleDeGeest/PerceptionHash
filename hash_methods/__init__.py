@@ -58,12 +58,21 @@ for i in range(64,0,-1):
 RESULT_THRESHOLDS = thresholds
 
 AMOUNT_OF_IMAGES = {
-    "Phash": 1000,
-    "Vit": 10000,
-    "Phash_Vit": 300,
+    "Phash": 50000,
+    "Vit": 5000,
+    "Phash_Vit": 50000,
     "WaveletHash": 10000,
     "Dhash": 10000,
-    "Phash_Dhash": 300
+    "Phash_Dhash": 100
+}
+
+AMOUNT_OF_THREADS = {
+    "Phash": None,
+    "Vit": 1,
+    "Phash_Vit": 1,
+    "WaveletHash": None,
+    "Dhash": None,
+    "Phash_Dhash": None
 }
 
 

@@ -22,7 +22,9 @@
       "mirror": "mirrored",
       "distort_color": "color-distorted",
       "compression": "compressed",
-      "crop_rotation": "croprotated"
+      "crop_rotation": "croprotated",
+      "color_distortion": "color-distorted",
+      "rotate": "rotated"
     },
     "cache_name_dict":{
       "Phash": "Phash.json",

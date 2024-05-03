@@ -12,16 +12,12 @@ class Phash_Dhash(HashMethod):
         self.threshold= 0.8
         self.new_fp = {}
 
-    def get_similar_images(self, images: dict, similarity_thresholds, cache_path=None):
-        image_copy = copy.deepcopy(images)
-        phash_images = self.phash.get_similar_images(images, similarity_thresholds, cache_path)
-        dhash_images = self.dhash.get_similar_images(image_copy,[self.threshold], cache_path)
-        # print(vit_images["MetaTestset_1:0"])
-        # print(phash_images["MetaTestset_1:0"])
-        images = self.combine_dictionaries(phash_images, dhash_images)
-        self.find_new_FP(phash_images, dhash_images)
-
-        return images
+    def get_similar_images(self, images: dict, cache_path=None):
+        phash_similarities = self.phash.get_similar_images(images, cache_path)
+        dhash_similarities = self.dhash.get_similar_images(images, cache_path)
+        mask = dhash_similarities < self.threshold
+        phash_similarities[mask] = 0
+        return phash_similarities
 
     def set_database(self, database):
         self.dhash.set_database(database)
