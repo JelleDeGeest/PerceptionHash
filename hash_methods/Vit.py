@@ -94,6 +94,9 @@ class Vit(HashMethod):
     def set_database(self, database):
         self.databases = database
     
+    def find_optimal_threshold(self, images: dict, cache_path=None):
+        return[self.get_similar_images(images, cache_path)]
+    
     def calculate_similarity_in_batches(self, new_features, stored_features, similarity_thresholds, batch_size=100):
         batch_similarities = []
         for i in range(0, len(stored_features), batch_size):
@@ -159,5 +162,3 @@ class Vit(HashMethod):
         
         torch.save(feature_vectors, os.path.join(output_path, str("ViT")+".pt"))
         # print(f"Hashes written to {os.path.join(output_path, str("ViT")+'.pt')}")
-        
-

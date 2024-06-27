@@ -1,32 +1,32 @@
 from .HashMethod import HashMethod
-from .Dhash import Dhash
-from .Phash import Phash
+from .Vit import Vit
+from .Phash_144 import Phash_144
 import os
 import json
 import copy
 
-class Phash_Dhash(HashMethod):
+class Phash144_Vit(HashMethod):
     def __init__(self):
-        self.dhash = Dhash()
-        self.phash = Phash()
-        self.threshold= 0.8
+        self.vit = Vit()
+        self.phash = Phash_144()
+        self.threshold= 0.7
         self.new_fp = {}
+
 
     def get_similar_images(self, images: dict, cache_path=None):
         phash_similarities = self.phash.get_similar_images(images, cache_path)
-        dhash_similarities = self.dhash.get_similar_images(images, cache_path)
-        mask = dhash_similarities < self.threshold
+        vit_similarities = self.vit.get_similar_images(images, cache_path)
+        mask = vit_similarities < self.threshold
         phash_similarities[mask] = 0
         return phash_similarities
-    
+
     def find_optimal_threshold(self, images: dict, cache_path=None):
         phash_similarities = self.phash.get_similar_images(images, cache_path)
-        dhash_similarities = self.dhash.get_similar_images(images, cache_path)
-        return[phash_similarities, dhash_similarities]
-        
+        vit_similarities = self.vit.get_similar_images(images, cache_path)
+        return[phash_similarities, vit_similarities]
 
     def set_database(self, database):
-        self.dhash.set_database(database)
+        self.vit.set_database(database)
         self.phash.set_database(database)
     
     def database_generation(self, images_path, database_path):
@@ -87,4 +87,8 @@ class Phash_Dhash(HashMethod):
                 else:
                     self.new_fp[key] += common_elements
 
+
+
+
+                
         

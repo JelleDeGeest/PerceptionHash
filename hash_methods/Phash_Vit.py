@@ -20,6 +20,11 @@ class Phash_Vit(HashMethod):
         phash_similarities[mask] = 0
         return phash_similarities
 
+    def find_optimal_threshold(self, images: dict, cache_path=None):
+        phash_similarities = self.phash.get_similar_images(images, cache_path)
+        vit_similarities = self.vit.get_similar_images(images, cache_path)
+        return[phash_similarities, vit_similarities]
+
     def set_database(self, database):
         self.vit.set_database(database)
         self.phash.set_database(database)

@@ -1,14 +1,16 @@
-from itertools import product
+# import os
+# import shutil
+# from Utilities import extract_number
+# # print list  folders in folder
+# folder = "D:/thesisdata\distorted\MetaTestset_1"
+# copy_dir = "D:/temp"
+# for folder in os.listdir(folder):
+#     for file in os.listdir(f"D:/thesisdata\distorted\MetaTestset_1/{folder}"):
+#         if extract_number(file, prefix=".*-", sufix="-.*") == 52:
+#             # copy file into copy dir
+#             shutil.copy2(f"D:/thesisdata\distorted\MetaTestset_1/{folder}/{file}", f"{copy_dir}")
+            
 
-def generate_combinations(*lists):
-    # Generate all combinations using product, which computes the Cartesian product
-    combinations = product(*lists)
-    # Convert each combination (which is a tuple) to a list
-    return [list(combination) for combination in combinations]
+import numpy as np
 
-# Example usage:
-list1 = [1, 2]
-list2 = [3, 4]
-list3 = [5, 6]
-result = generate_combinations(list1, list2, list3)
-print(result)
+print([0, 0.3, 0.5, 0.6, 0.7, 0.8] + list(np.linspace(0.9,1.0,11, endpoint=True)))

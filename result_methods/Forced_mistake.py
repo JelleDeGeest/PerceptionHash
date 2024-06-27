@@ -7,7 +7,7 @@ import numpy as np
 from Utilities import *
 
 class Forced_mistake():
-    def __init__(self, hash_objects, folders_to_hash):
+    def __init__(self, hash_objects, folders_to_hash, temp, temp2):
         self.hash_objects = hash_objects
         self.folders_to_hash = folders_to_hash
         with open("Settings.json") as file:

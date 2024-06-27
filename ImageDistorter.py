@@ -69,22 +69,21 @@ class ImageDistorter():
         degrees = settings["distortion_settings"]["rotate"]
 
         for degree in degrees:
-            # check if the specific output folder already exists
+            # Check if the specific output folder already exists
             specific_output_path = self.get_specific_output_path(f"rotate-{degree}")
             if specific_output_path is None:
                 continue
             amount = self.amount
 
-            # loop through the images and rotate them
-            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number),desc=f"Rotating images by {degree} degrees"):
+            # Loop through the images and rotate them
+            for file in tqdm(sorted(os.listdir(self.input_path), key=extract_number), desc=f"Rotating images by {degree} degrees"):
                 if amount == 0:
                     break
                 file_name, file_extension = os.path.splitext(file)
-                with Image.open(os.path.join(self.input_path,file)) as img:
-                    
-                    rotated_img = img.rotate(degree)
+                with Image.open(os.path.join(self.input_path, file)) as img:
+                    rotated_img = img.rotate(degree, expand=True)  # Rotate with expand=True to avoid black bands
                     rotated_img.save(os.path.join(specific_output_path, f"{self.input_dirname}-{file_name}-rotated-{degree}{file_extension}"))
-                
+
                 amount -= 1
 
     def scale(self):
@@ -196,33 +195,55 @@ class ImageDistorter():
                 amount -= 1
 
     def crop_rotation(self):
-        def crop_to_content( img, original_size, degrees):
-            # Image dimensions and radians
-            width, height = original_size
+        def rotatedRectWithMaxArea(w, h, angle):
+            """
+            Given a rectangle of size wxh that has been rotated by 'angle' (in radians),
+            computes the width and height of the largest possible axis-aligned rectangle (maximal area)
+            within the rotated rectangle.
+            """
+            if w <= 0 or h <= 0:
+                return 0, 0
+
+            width_is_longer = w >= h
+            side_long, side_short = (w, h) if width_is_longer else (h, w)
+
+            # since the solutions for angle, -angle and 180-angle are all the same,
+            # it suffices to look at the first quadrant and the absolute values of sin,cos:
+            sin_a, cos_a = abs(math.sin(angle)), abs(math.cos(angle))
+            if side_short <= 2. * sin_a * cos_a * side_long or abs(sin_a - cos_a) < 1e-10:
+                # half constrained case: two crop corners touch the longer side,
+                # the other two corners are on the mid-line parallel to the longer line
+                x = 0.5 * side_short
+                wr, hr = (x / sin_a, x / cos_a) if width_is_longer else (x / cos_a, x / sin_a)
+            else:
+                # fully constrained case: crop touches all 4 sides
+                cos_2a = cos_a * cos_a - sin_a * sin_a
+                wr, hr = (w * cos_a - h * sin_a) / cos_2a, (h * cos_a - w * sin_a) / cos_2a
+
+            return wr, hr
+
+        def crop_to_content(img, degrees):
+            """Rotate and crop the image to remove black borders."""
             radians = math.radians(degrees)
+            w, h = img.size
 
-            # Calculate the width and height of the rotated image
-            cos_angle = abs(math.cos(radians))
-            sin_angle = abs(math.sin(radians))
-            new_width = int(height * sin_angle + width * cos_angle)
-            new_height = int(height * cos_angle + width * sin_angle)
+            # Rotate the image with expand=True to get the full rotated image
+            rotated_img = img.rotate(degrees, expand=True)
+            rotated_w, rotated_h = rotated_img.size
 
-            # Calculate the width and height of the crop box
-            original_diag = math.sqrt(width ** 2 + height ** 2)
-            scale_factor = min(new_width, new_height) / original_diag
-            crop_width = int(width * scale_factor)
-            crop_height = int(height * scale_factor)
+            # Calculate the largest possible rectangle within the rotated image
+            new_w, new_h = rotatedRectWithMaxArea(w, h, radians)
 
-            # Calculate the position of the crop box
-            x0 = (new_width - crop_width) // 2
-            y0 = (new_height - crop_height) // 2
-            x1 = x0 + crop_width
-            y1 = y0 + crop_height
+            # Calculate the cropping box to center the largest rectangle
+            left = (rotated_w - new_w) / 2
+            top = (rotated_h - new_h) / 2
+            right = left + new_w
+            bottom = top + new_h
 
-            # Crop the image
-            cropped_img = img.crop((x0, y0, x1, y1))
+            # Crop the image to the calculated bounding box
+            cropped_img = rotated_img.crop((left, top, right, bottom))
             return cropped_img
-        
+
         with open("Settings.json") as file:
             settings = json.load(file)
         degrees = settings["distortion_settings"]["crop_rotation"]
@@ -238,13 +259,8 @@ class ImageDistorter():
                     break
                 file_name, file_extension = os.path.splitext(file)
                 with Image.open(os.path.join(self.input_path, file)) as img:
-                    # Rotate image with expand=True to avoid clipping
-                    rotated_img = img.rotate(degree, expand=True)
-
-                    # Mathematical cropping to remove black borders
-                    rotated_img = crop_to_content(rotated_img, img.size, degree)
-
-                    rotated_img.save(os.path.join(specific_output_path, f"{self.input_dirname}-{file_name}-croprotated-{degree}degrees{file_extension}"))
+                    cropped_img = crop_to_content(img, degree)
+                    cropped_img.save(os.path.join(specific_output_path, f"{self.input_dirname}-{file_name}-croprotated-{degree}degrees{file_extension}"))
                 
                 amount -= 1
 

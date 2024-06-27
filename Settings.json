@@ -4,7 +4,8 @@
     "input_directories": {
       "MetaTestset_1": "D:\\thesisdata\\Included\\1",
       "MetaTestset_2": "D:\\thesisdata\\Included\\2",
-      "MetaTestset_3": "D:\\thesisdata\\Not-included"
+      "MetaTestset_3": "D:\\thesisdata\\Not-included",
+      "ImSim": "D:\\thesisdata/SimIm/0"
     },
     "distortion_settings": {
       "rotate": [90, 180, 270],
@@ -12,7 +13,7 @@
       "blur": [2, 5],
       "color_distortion": [0.3, 0.5, 0.7],
       "compression": [30, 50, 70],
-      "crop_rotation": [10, 15]
+      "crop_rotation": [15, 10]
     },
     "amount_of_forced_mistakes": 3,
     "distortion_name_dict":{

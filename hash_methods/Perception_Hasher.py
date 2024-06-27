@@ -23,7 +23,7 @@ class Perception_Hasher(HashMethod):
     
     def get_similar_images(self, images: dict, cache_path=None):
         
-        time1 = time.time()
+        # time1 = time.time()
         similarities = None
         # Check if a database has been set
         if self.databases is None:
@@ -64,10 +64,13 @@ class Perception_Hasher(HashMethod):
         #                     similarities[threshold][db_name] = value
         #         images[key] = similarities
         
-        time2 = time.time()
+        # time2 = time.time()
         # print(f"Time taken for Similarity: {time2-time1} seconds")
 
         return similarities.astype(np.float64)
+    
+    def find_optimal_threshold(self, images: dict, cache_path=None):
+        return[self.get_similar_images(images, cache_path)]
 
     def hashes_to_matrix(self, hashes, hasher):
         # Convert hash strings to binary matrix
@@ -77,7 +80,12 @@ class Perception_Hasher(HashMethod):
     
     def find_similar_images(self, hash_matrix, db_matrix):
         pairwise_abs_diff = np.abs(hash_matrix[:, np.newaxis, :] - db_matrix)
-        distances = np.sum(pairwise_abs_diff, axis=2) / 64
+        if self.name in ["PDQhash", "Phash_256", "Dhash_256"]:
+            distances = np.sum(pairwise_abs_diff, axis=2) / 256
+        elif self.name in ["Dhash_144", "Phash_144"]:
+            distances = np.sum(pairwise_abs_diff, axis=2) / 144
+        else:
+            distances = np.sum(pairwise_abs_diff, axis=2) / 64
         return distances
 
     def set_database(self, database):
@@ -111,6 +119,12 @@ class Perception_Hasher(HashMethod):
         print(f"Hashes written to {os.path.join(database_path, str(database_partition)+'.json')}")
     
     def cache_generation(self, images_path, output_path, lenght=-1):
+        # check if cache already exists
+        if os.path.exists(output_path + f"/{self.name}.json"):
+            print(f"Cache already exists for {output_path + '/' +self.name + '.json'}")
+            return
+
+
         hasher = self.hasher
         hashes = []
 

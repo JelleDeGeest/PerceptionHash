@@ -1,14 +1,15 @@
 from .HashMethod import HashMethod
-from .Dhash import Dhash
-from .Phash import Phash
+from .Dhash_144 import Dhash_144
+from .Phash_144 import Phash_144
 import os
 import json
 import copy
+import time
 
-class Phash_Dhash(HashMethod):
+class Phash144_Dhash144(HashMethod):
     def __init__(self):
-        self.dhash = Dhash()
-        self.phash = Phash()
+        self.dhash = Dhash_144()
+        self.phash = Phash_144()
         self.threshold= 0.8
         self.new_fp = {}
 
@@ -20,8 +21,11 @@ class Phash_Dhash(HashMethod):
         return phash_similarities
     
     def find_optimal_threshold(self, images: dict, cache_path=None):
+        # time1 = time.time()
         phash_similarities = self.phash.get_similar_images(images, cache_path)
         dhash_similarities = self.dhash.get_similar_images(images, cache_path)
+        # time2 = time.time()
+        # print(f"Time taken for {images}: {time2-time1:.2f} seconds")
         return[phash_similarities, dhash_similarities]
         
 
