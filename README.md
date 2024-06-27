@@ -1,6 +1,6 @@
 # Perceptual Hashing Framework
 
-Welcome to the Perceptual Hashing Framework repository. This framework allows you to test and compare various perceptual hashing methods and analyze their performance. Below is a detailed overview of the repository structure and the purpose of each file and folder.
+Welcome to the PerceptionHash Framework repository. This framework allows you to test and compare various perceptual hashing methods and analyze their performance. Below is a detailed overview of the repository structure and the purpose of each file and folder.
 
 ## Repository Structure
 
